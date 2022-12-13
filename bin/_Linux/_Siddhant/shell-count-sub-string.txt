@@ -1,0 +1,1 @@
+ Write a shell script to check and count occurrence of a sub-string inthestring 

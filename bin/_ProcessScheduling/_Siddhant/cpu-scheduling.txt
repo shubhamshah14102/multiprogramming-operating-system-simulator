@@ -1,0 +1,693 @@
+Draw the Gantt charts and compute the finish time, turnaround time and
+waitingtime for the following algorithms:
+A.fcfs
+#include <bits/stdc++.h>
+using namespace std;
+
+class Process
+{
+private:
+    int at;
+    int bt;
+    int ct;
+    int tat;
+    int wt;
+    int Pid;
+
+public:
+    int &operator[](string var)
+    {
+        if (var == "at")
+        {
+            return at;
+        }
+        if (var == "bt")
+        {
+            return bt;
+        }
+        if (var == "ct")
+        {
+            return ct;
+        }
+        if (var == "tat")
+        {
+            return tat;
+        }
+        if (var == "wt")
+        {
+            return wt;
+        }
+        return Pid;
+    }
+
+    void update_after_ct()
+    {
+        tat = ct - at;
+        wt = tat - bt;
+    }
+
+    void display()
+    {
+        cout << Pid << "\t" << at << "\t" << bt << "\t" << ct << "\t" << tat << "\t" << wt << endl;
+    }
+};
+float average(vector<Process> P, string var)
+{
+    int total = 0;
+    for (auto temp : P)
+    {
+        total += temp[var];
+    }
+    return (float)total / P.size();
+}
+int main()
+{
+    int n;
+    cout << "Enter the number of processes: ";
+    cin >> n;
+    cout << "Enter the arrival time and burst time for each process: " << endl;
+    int counter = 0;
+    vector<Process> P(n);
+    for (Process &temp : P)
+    {
+        temp["id"] = counter++;
+        cin >> temp["at"] >> temp["bt"];
+    }
+    sort(P.begin(), P.end(),
+         [](Process first, Process second)
+         {
+             return first["at"] < second["at"];
+         });
+    cout << "Pid\tat\tbt\tct\ttat\twt" << endl;
+    P[0]["ct"] = P[0]["at"] + P[0]["bt"];
+    P[0].update_after_ct();
+    P[0].display();
+    for (int i = 1; i < P.size(); i++)
+    {
+        if (P[i]["at"] < P[i - 1]["ct"])
+        {
+            P[i]["ct"] = P[i - 1]["ct"] + P[i]["bt"];
+        }
+        else
+        {
+            cout << "curr['at']: " << P[i]["at"] << ", prev['ct']: " << P[i - 1]["ct"] << endl;
+            P[i]["ct"] = P[i]["at"] + P[i]["bt"];
+        }
+        P[i].update_after_ct();
+        P[i].display();
+    }
+    cout << "Average Waiting Time: " << average(P, "wt") << endl;
+}
+output
+Enter the number of processes: 3
+Enter the arrival time and burst time for each process: 
+2 4
+3 1
+4 5
+Pid     at      bt      ct      tat     wt
+0       2       4       6       4       0
+1       3       1       7       4       3
+2       4       5       12      8       3
+Average Waiting Time: 2
+ B. Round- Robin
+ ans--
+ //C++ Program for implementing
+//Round Robin Algorithm
+//code by sparsh_cbs
+#include <iostream>
+
+using namespace std;
+
+void queueUpdation(int queue[],int timer,int arrival[],int n, int maxProccessIndex){
+	int zeroIndex;
+	for(int i = 0; i < n; i++){
+		if(queue[i] == 0){
+			zeroIndex = i;
+			break;
+		}
+	}
+	queue[zeroIndex] = maxProccessIndex + 1;
+}
+
+void queueMaintainence(int queue[], int n){
+	for(int i = 0; (i < n-1) && (queue[i+1] != 0) ; i++){
+		int temp = queue[i];
+		queue[i] = queue[i+1];
+		queue[i+1] = temp;
+	}
+}
+
+void checkNewArrival(int timer, int arrival[], int n, int maxProccessIndex,int queue[]){
+	if(timer <= arrival[n-1]){
+	bool newArrival = false;
+	for(int j = (maxProccessIndex+1); j < n; j++){
+			if(arrival[j] <= timer){
+			if(maxProccessIndex < j){
+				maxProccessIndex = j;
+				newArrival = true;
+			}
+		}
+	}
+	//adds the incoming process to the ready queue
+	//(if any arrives)
+	if(newArrival)
+		queueUpdation(queue,timer,arrival,n, maxProccessIndex);
+	}
+}
+
+//Driver Code
+int main(){
+	int n,tq, timer = 0, maxProccessIndex = 0;
+	float avgWait = 0, avgTT = 0;
+	cout << "\nEnter the time quanta : ";
+	cin>>tq;
+	cout << "\nEnter the number of processes : ";
+	cin>>n;
+	int arrival[n], burst[n], wait[n], turn[n], queue[n], temp_burst[n];
+	bool complete[n];
+
+	cout << "\nEnter the arrival time of the processes : ";
+	for(int i = 0; i < n; i++)
+		cin>>arrival[i];
+
+	cout << "\nEnter the burst time of the processes : ";
+	for(int i = 0; i < n; i++){
+		cin>>burst[i];
+		temp_burst[i] = burst[i];
+	}
+
+	for(int i = 0; i < n; i++){ //Initializing the queue and complete array
+		complete[i] = false;
+		queue[i] = 0;
+	}
+	while(timer < arrival[0]) //Incrementing Timer until the first process arrives
+		timer++;
+	queue[0] = 1;
+	
+	while(true){
+		bool flag = true;
+		for(int i = 0; i < n; i++){
+			if(temp_burst[i] != 0){
+				flag = false;
+				break;
+			}
+		}
+		if(flag)
+			break;
+
+		for(int i = 0; (i < n) && (queue[i] != 0); i++){
+			int ctr = 0;
+			while((ctr < tq) && (temp_burst[queue[0]-1] > 0)){
+				temp_burst[queue[0]-1] -= 1;
+				timer += 1;
+				ctr++;
+
+				//Checking and Updating the ready queue until all the processes arrive
+				checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
+			}
+			//If a process is completed then store its exit time
+			//and mark it as completed
+			if((temp_burst[queue[0]-1] == 0) && (complete[queue[0]-1] == false)){
+				//turn array currently stores the completion time
+				turn[queue[0]-1] = timer;	
+				complete[queue[0]-1] = true;
+			}
+			
+			//checks whether or not CPU is idle
+			bool idle = true;
+			if(queue[n-1] == 0){
+				for(int i = 0; i < n && queue[i] != 0; i++){
+					if(complete[queue[i]-1] == false){
+						idle = false;
+					}
+				}
+			}
+			else
+				idle = false;
+
+			if(idle){
+				timer++;
+				checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
+			}
+	
+			//Maintaining the entries of processes
+			//after each premption in the ready Queue
+			queueMaintainence(queue,n);
+		}
+	}
+
+	for(int i = 0; i < n; i++){
+		turn[i] = turn[i] - arrival[i];
+		wait[i] = turn[i] - burst[i];
+	}
+
+	cout << "\nProgram No.\tArrival Time\tBurst Time\tWait Time\tTurnAround Time"
+		<< endl;
+	for(int i = 0; i < n; i++){
+		cout<<i+1<<"\t\t"<<arrival[i]<<"\t\t"
+		<<burst[i]<<"\t\t"<<wait[i]<<"\t\t"<<turn[i]<<endl;
+	}
+	for(int i =0; i< n; i++){
+		avgWait += wait[i];
+		avgTT += turn[i];
+	}
+	cout<<"\nAverage wait time : "<<(avgWait/n)
+	<<"\nAverage Turn Around Time : "<<(avgTT/n);
+
+	return 0;
+	
+}
+
+ output
+ Enter the time quanta : 2
+
+Enter the number of processes : 4
+
+Enter the arrival time of the processes : 0 1 2 3
+
+Enter the burst time of the processes : 5 4 2 1
+
+Program No.     Arrival Time    Burst Time      Wait Time       TurnAround Time
+1               0               5               7               12
+2               1               4               6               10
+3               2               2               2               4
+4               3               1               5               6
+
+Average wait time : 5
+Average Turn Around Time : 8
+
+
+
+
+c Shortest Job First (Non Preemptive)
+ ans--
+ // C++ implementation of shortest job first
+// using the concept of segment tree
+
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define z 1000000007
+#define sh 100000
+#define pb push_back
+#define pr(x) printf("%d ", x)
+
+struct util {
+
+	// Process ID
+	int id;
+	// Arrival time
+	int at;
+	// Burst time
+	int bt;
+	// Completion time
+	int ct;
+	// Turnaround time
+	int tat;
+	// Waiting time
+	int wt;
+}
+
+// Array to store all the process information
+// by implementing the above struct util
+ar[sh + 1];
+
+struct util1 {
+
+	// Process id
+	int p_id;
+	// burst time
+	int bt1;
+};
+
+util1 range;
+
+// Segment tree array to
+// process the queries in nlogn
+util1 tr[4 * sh + 5];
+
+// To keep an account of where
+// a particular process_id is
+// in the segment tree base array
+int mp[sh + 1];
+
+// Comparator function to sort the
+// struct array according to arrival time
+bool cmp(util a, util b)
+{
+	if (a.at == b.at)
+		return a.id < b.id;
+	return a.at < b.at;
+}
+
+// Function to update the burst time and process id
+// in the segment tree
+void update(int node, int st, int end,
+			int ind, int id1, int b_t)
+{
+	if (st == end) {
+		tr[node].p_id = id1;
+		tr[node].bt1 = b_t;
+		return;
+	}
+	int mid = (st + end) / 2;
+	if (ind <= mid)
+		update(2 * node, st, mid, ind, id1, b_t);
+	else
+		update(2 * node + 1, mid + 1, end, ind, id1, b_t);
+	if (tr[2 * node].bt1 < tr[2 * node + 1].bt1) {
+		tr[node].bt1 = tr[2 * node].bt1;
+		tr[node].p_id = tr[2 * node].p_id;
+	}
+	else {
+		tr[node].bt1 = tr[2 * node + 1].bt1;
+		tr[node].p_id = tr[2 * node + 1].p_id;
+	}
+}
+
+// Function to return the range minimum of the burst time
+// of all the arrived processes using segment tree
+util1 query(int node, int st, int end, int lt, int rt)
+{
+	if (end < lt || st > rt)
+		return range;
+	if (st >= lt && end <= rt)
+		return tr[node];
+	int mid = (st + end) / 2;
+	util1 lm = query(2 * node, st, mid, lt, rt);
+	util1 rm = query(2 * node + 1, mid + 1, end, lt, rt);
+	if (lm.bt1 < rm.bt1)
+		return lm;
+	return rm;
+}
+
+// Function to perform non_preemptive
+// shortest job first and return the
+// completion time, turn around time and
+// waiting time for the given processes
+void non_preemptive_sjf(int n)
+{
+
+	// To store the number of processes
+	// that have been completed
+	int counter = n;
+
+	// To keep an account of the number
+	// of processes that have been arrived
+	int upper_range = 0;
+
+	// Current running time
+	int tm = min(INT_MAX, ar[upper_range + 1].at);
+
+	// To find the list of processes whose arrival time
+	// is less than or equal to the current time
+	while (counter) {
+		for (; upper_range <= n;) {
+			upper_range++;
+			if (ar[upper_range].at > tm || upper_range > n) {
+				upper_range--;
+				break;
+			}
+
+			update(1, 1, n, upper_range,
+				ar[upper_range].id, ar[upper_range].bt);
+		}
+
+		// To find the minimum of all the running times
+		// from the set of processes whose arrival time is
+		// less than or equal to the current time
+		util1 res = query(1, 1, n, 1, upper_range);
+
+		// Checking if the process has already been executed
+		if (res.bt1 != INT_MAX) {
+			counter--;
+			int index = mp[res.p_id];
+			tm += (res.bt1);
+
+			// Calculating and updating the array with
+			// the current time, turn around time and waiting time
+			ar[index].ct = tm;
+			ar[index].tat = ar[index].ct - ar[index].at;
+			ar[index].wt = ar[index].tat - ar[index].bt;
+
+			// Update the process burst time with
+			// infinity when the process is executed
+			update(1, 1, n, index, INT_MAX, INT_MAX);
+		}
+		else {
+			tm = ar[upper_range + 1].at;
+		}
+	}
+}
+
+// Function to call the functions and perform
+// shortest job first operation
+void execute(int n)
+{
+
+	// Sort the array based on the arrival times
+	sort(ar + 1, ar + n + 1, cmp);
+	for (int i = 1; i <= n; i++)
+		mp[ar[i].id] = i;
+
+	// Calling the function to perform
+	// non-preemptive-sjf
+	non_preemptive_sjf(n);
+}
+
+// Function to print the required values after
+// performing shortest job first
+void print(int n)
+{
+
+	cout << "ProcessId "
+		<< "Arrival Time "
+		<< "Burst Time "
+		<< "Completion Time "
+		<< "Turn Around Time "
+		<< "Waiting Time\n";
+	for (int i = 1; i <= n; i++) {
+		cout << ar[i].id << " \t\t "
+			<< ar[i].at << " \t\t "
+			<< ar[i].bt << " \t\t "
+			<< ar[i].ct << " \t\t "
+			<< ar[i].tat << " \t\t "
+			<< ar[i].wt << " \n";
+	}
+}
+
+// Driver code
+int main()
+{
+	// Number of processes
+	int n = 5;
+
+	// Initializing the process id
+	// and burst time
+	range.p_id = INT_MAX;
+	range.bt1 = INT_MAX;
+
+	for (int i = 1; i <= 4 * sh + 1; i++) {
+		tr[i].p_id = INT_MAX;
+		tr[i].bt1 = INT_MAX;
+	}
+
+	// Arrival time, Burst time and ID
+	// of the processes on which SJF needs
+	// to be performed
+	ar[1].at = 1;
+	ar[1].bt = 7;
+	ar[1].id = 1;
+
+	ar[2].at = 2;
+	ar[2].bt = 5;
+	ar[2].id = 2;
+
+	ar[3].at = 3;
+	ar[3].bt = 1;
+	ar[3].id = 3;
+
+	ar[4].at = 4;
+	ar[4].bt = 2;
+	ar[4].id = 4;
+
+	ar[5].at = 5;
+	ar[5].bt = 8;
+	ar[5].id = 5;
+
+	execute(n);
+
+	// Print the calculated time
+	print(n);
+}
+output
+ProcessId Arrival Time Burst Time Completion Time Turn Around Time Waiting Time
+1                1               7               8               7               0 
+2                2               5               16              14              9 
+3                3               1               9               6               5 
+4                4               2               11              7               5 
+5                5               8               24              19              11 
+
+
+
+
+d  Priority (Non Preemptive)
+ans--
+// C++ implementation for Priority Scheduling with
+//Different Arrival Time priority scheduling
+/*1. sort the processes according to arrival time
+2. if arrival time is same the acc to priority
+3. apply fcfs
+*/
+
+#include <bits/stdc++.h>
+
+using namespace std;
+
+#define totalprocess 5
+
+// Making a struct to hold the given input
+
+struct process
+{
+int at,bt,pr,pno;
+};
+
+process proc[50];
+
+/*
+Writing comparator function to sort according to priority if
+arrival time is same
+*/
+
+bool comp(process a,process b)
+{
+if(a.at == b.at)
+{
+return a.pr<b.pr;
+}
+else
+{
+	return a.at<b.at;
+}
+}
+
+// Using FCFS Algorithm to find Waiting time
+void get_wt_time(int wt[])
+{
+// declaring service array that stores cumulative burst time
+int service[50];
+
+// Initialising initial elements of the arrays
+service[0] = proc[0].at;
+wt[0]=0;
+
+
+for(int i=1;i<totalprocess;i++)
+{
+service[i]=proc[i-1].bt+service[i-1];
+
+wt[i]=service[i]-proc[i].at;
+
+// If waiting time is negative, change it into zero
+	
+	if(wt[i]<0)
+	{
+	wt[i]=0;
+	}
+}
+
+}
+
+void get_tat_time(int tat[],int wt[])
+{
+// Filling turnaroundtime array
+
+for(int i=0;i<totalprocess;i++)
+{
+	tat[i]=proc[i].bt+wt[i];
+}
+	
+}
+
+void findgc()
+{
+//Declare waiting time and turnaround time array
+int wt[50],tat[50];
+
+double wavg=0,tavg=0;
+
+// Function call to find waiting time array
+get_wt_time(wt);
+//Function call to find turnaround time
+get_tat_time(tat,wt);
+	
+int stime[50],ctime[50];
+
+stime[0] = proc[0].at;
+ctime[0]=stime[0]+tat[0];
+
+// calculating starting and ending time
+for(int i=1;i<totalprocess;i++)
+	{
+		stime[i]=ctime[i-1];
+		ctime[i]=stime[i]+tat[i]-wt[i];
+	}
+	
+cout<<"Process_no\tStart_time\tComplete_time\tTurn_Around_Time\tWaiting_Time"<<endl;
+	
+	// display the process details
+	
+for(int i=0;i<totalprocess;i++)
+	{
+		wavg += wt[i];
+		tavg += tat[i];
+		
+		cout<<proc[i].pno<<"\t\t"<<
+			stime[i]<<"\t\t"<<ctime[i]<<"\t\t"<<
+			tat[i]<<"\t\t\t"<<wt[i]<<endl;
+	}
+	
+		// display the average waiting time
+		//and average turn around time
+	
+	cout<<"Average waiting time is : ";
+	cout<<wavg/(float)totalprocess<<endl;
+	cout<<"average turnaround time : ";
+	cout<<tavg/(float)totalprocess<<endl;
+
+}
+
+int main()
+{
+int arrivaltime[] = { 1, 2, 3, 4, 5 };
+int bursttime[] = { 3, 5, 1, 7, 4 };
+int priority[] = { 3, 4, 1, 7, 8 };
+	
+for(int i=0;i<totalprocess;i++)
+{
+	proc[i].at=arrivaltime[i];
+	proc[i].bt=bursttime[i];
+	proc[i].pr=priority[i];
+	proc[i].pno=i+1;
+	}
+	
+	//Using inbuilt sort function
+	
+	sort(proc,proc+totalprocess,comp);
+	
+	//Calling function findgc for finding Gantt Chart
+	
+	findgc();
+
+	return 0;
+}
+output
+Process_no      Start_time      Complete_time   Turn_Around_Time        Waiting_Time
+1               1               4               3                       0
+2               4               9               7                       2
+3               9               10              7                       6
+4               10              17              13                      6
+5               17              21              16                      12
+Average waiting time is : 5.2
+average turnaround time : 9.2

@@ -1,0 +1,123 @@
+2 Write down Linux commands for following statements: 
+  i. Redirect the output of ls command to a file named outfile. Useinput file for remaining commands. 
+  ans--
+   ls > outfile.txt
+ii. To select the lines in a file which has digit as one of the characterline and redirect the output to the file named list. 
+ans-- 
+grep ‘[0-9]’ outfield.txt > list.txt
+
+iii. Assign execute permission to owner and remove read permissionfromother for an ordinary 
+file named test by relative way. 
+ans-
+Assign execute permission: chmod +x ./test.sh remove read permission: chmod o-r ./test.sh
+iv. Create an alias named rm that always deletes file interactively. 
+ans--
+alias rm=‘rm -I’
+v. Count the currently login users to the system.
+ans--
+who | wc -l
+
+
+
+
+
+
+3 Write down Linux commands for following statements: 
+i. Redirect the output of cat command to a file named outfile. Usean input file for remaining commands. 
+ans--
+cat input.txt > outfield.txt
+ii. List all hidden files under current directory and store in “hidden”
+ans--
+ls -a > hidden.txt
+iii. Assign write permission to owner and remove execute permissionfromother for an ordinary file named test by absolute way. 
+ans--
+chmod 777 file.txt
+chomd 766 file.txt
+iv. To create soft and hard link for given file
+hard link
+ans--
+ls -l 
+ln a.txt b.txt(next choose any file and write its name like there is file name a.txt or any)
+ls -l (u will two files but different names a.txt and b.txt
+soft link
+ans--
+ls -l
+ln -s a.txt b.txt
+ls -l
+ v. To convert lowercase to upper case of a given file 
+ ans--
+ tr a-z A-Z < items.txt
+vi. To extract 1st and 10th character of a given file
+ans--
+ while read line
+> do
+>  echo ${line:1:10}
+> done < file
+
+ vii. To display how many times lines are repeated in a given file
+ ans--
+ sort file.txt | uniq —count
+ 
+ 
+ 
+ 
+ 
+ 18	Write down Linux commands for following statements: 
+i. To redirect the output of cp command to a file named outfile. Usethisas an input file for remaining commands.
+ans--
+ man cp > outfield.tx
+ii. To select the lines in a file which has 4 letter words in that lineandredirect the  output to the file named list. 
+ans--
+grep -o -w ‘\w\{4]}’ outfield.txt > list.txt
+iii. Assign write permission to owner and remove read permissionfromgroup user for an ordinary file named test by relative way. 
+ans--
+assign write permission: chmod +w ./test.sh remove read permission: chmod g-r ./test.sh
+iv. Create an alias named ls that always lists all the files includinghiddenfiles. 
+ans--
+alias ls=‘ls -a’
+v. Count the number of words in the list file.
+ wc -w list.txt
+
+
+
+
+19	Write down Linux commands for following statements: 
+a. Redirect the output of mv command to a file named outfile. Usean input file for remaining commands. 
+b. List all hidden files under current directory and store in “hidden”file
+-> ls
+->ls -a
+c. Assign write permission to group user and remove execute permission from owner for an ordinary file named test by absolute way
+ans--
+chmod 777 file.txt
+chomd 766 file.txt
+d. To create soft and hard link for given file 
+hard link
+ans--
+ls -l 
+ln a.txt b.txt(next choose any file and write its name like there is file name a.txt or any)
+ls -l (u will two files but different names a.txt and b.txt
+soft link
+ans--
+ls -l
+ln -s a.txt b.txt
+ls -l
+e. To convert lowercase to upper case of a given file 
+ans--
+$ cat items.txt
+$ tr a-z A-Z < items.txt
+f. To extract 2 nd and 3 rd character of a given file 
+ans--
+$ cat file
+Linux
+Unix
+Solaris 
+$ while read line
+> do
+>  echo ${line:1:2}
+> done < file
+in
+ni
+ol
+g. To display how many times lines are repeated in a given file
+ans--
+sort <file> | uniq --count

@@ -1,0 +1,66 @@
+5 Write a program to solve producer-consumer problem using semaphore
+ans--
+#include<stdio.h>
+#include<semaphore.h>
+#include<pthread.h>
+
+pthread_t producer_thr;
+pthread_t consumer_thr;
+sem_t full;
+sem_t empty;
+sem_t mutex;
+int buf[3],item_no=0,buf_index=0; 
+
+void *producer(){   
+	int cntr;
+	for(cntr=0;cntr<5;cntr++){
+		printf("Producer produced item %d\n",item_no);
+		printf("Producer is checking if basket is having space\n");	
+
+		if(buf_index==3)
+			printf("Producer cannot insert as basket is full\n");
+
+		sem_wait(&empty);
+	
+		sem_wait(&mutex);
+		printf("Producer is inserting item %d in the basket\n",item_no);
+		buf[buf_index]=item_no;
+		buf_index++;
+		item_no++;
+		sem_post(&mutex);
+
+		sem_post(&full);
+	}
+}
+void *consumer(){
+	int item,cntr;
+	for(cntr=0;cntr<5;cntr++){
+		printf("\tConsumer is checking if buffer is having an item\n");	
+
+		if(buf_index==0)
+			printf("\tConsumer cannot consume as buffer is empty\n");
+	
+		sem_wait(&full);
+	
+		sem_wait(&mutex);
+		item=buf[buf_index];
+		printf("\tConsumer is removing item %d from the basket\n",item);
+		buf_index--;
+		sleep(3);
+		sem_post(&mutex);
+
+		sem_post(&empty);
+	}
+}
+
+void main(){
+	sem_init(&mutex,0,1);
+	sem_init(&full,0,0);
+	sem_init(&empty,0,3);
+
+	pthread_create(&producer_thr,NULL,producer,NULL);
+	pthread_create(&consumer_thr,NULL,consumer,NULL);
+	
+	pthread_join(producer_thr,NULL);
+	pthread_join(consumer_thr,NULL);
+}
