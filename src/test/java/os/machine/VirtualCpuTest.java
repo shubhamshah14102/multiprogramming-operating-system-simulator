@@ -2,11 +2,31 @@ package os.machine;
 
 import org.junit.jupiter.api.Test;
 import os.interrupt.InterruptDispatcher;
+import os.memory.FifoReplacementPolicy;
+import os.memory.PagedVirtualMemory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class VirtualCpuTest {
+    @Test
+    void executesLoadAndStoreThroughDemandPaging() {
+        PagedVirtualMemory memory =
+                new PagedVirtualMemory(4, 8, 2, new FifoReplacementPolicy());
+        VirtualCpu cpu = new VirtualCpu(memory, 100, new InterruptDispatcher());
+        cpu.loadProgram(new Program(
+                Instruction.registerImmediate(Opcode.LOAD_IMMEDIATE, 0, 42),
+                Instruction.registerAddress(Opcode.STORE, 0, 8),
+                Instruction.registerAddress(Opcode.LOAD, 1, 8),
+                Instruction.noOperands(Opcode.HALT)));
+
+        cpu.run(10);
+
+        assertEquals(42, cpu.registers().read(1));
+        assertEquals(2, memory.pageFaultCount());
+        assertEquals(42, memory.read(8));
+    }
+
     @Test
     void executesArithmeticMemoryAndBranchInstructionsDeterministically() {
         MachineMemory memory = new MachineMemory(64);

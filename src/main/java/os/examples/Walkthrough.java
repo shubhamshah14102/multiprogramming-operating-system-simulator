@@ -4,7 +4,6 @@ import os.interrupt.InterruptDispatcher;
 import os.loader.JobLoader;
 import os.loader.JobParser;
 import os.machine.DecodedInstruction;
-import os.machine.MachineMemory;
 import os.machine.VirtualCpu;
 import os.memory.AddressTranslation;
 import os.memory.AddressTranslator;
@@ -55,7 +54,8 @@ public final class Walkthrough {
         String source = Files.readString(jobFile, StandardCharsets.UTF_8);
         ProcessControlBlock pcb =
                 new JobLoader().load(new JobParser().parse(source)).getFirst();
-        MachineMemory memory = new MachineMemory(256);
+        PagedVirtualMemory memory =
+                new PagedVirtualMemory(32, 8, 2, new FifoReplacementPolicy());
         VirtualCpu cpu = new VirtualCpu(memory, 64, new InterruptDispatcher());
         cpu.loadProgram(pcb.program());
         pcb.transitionTo(ProcessState.READY);
@@ -74,8 +74,9 @@ public final class Walkthrough {
         pcb.saveContext(cpu.registers());
         pcb.transitionTo(ProcessState.TERMINATED);
         out.append(String.format(
-                "  halt pid=%d pc=%d mem[20]=%d%n%n",
-                pcb.processId(), cpu.registers().programCounter(), memory.read(20)));
+                "  halt pid=%d pc=%d mem[20]=%d pageFaults=%d%n%n",
+                pcb.processId(), cpu.registers().programCounter(),
+                memory.read(20), memory.pageFaultCount()));
     }
 
     private static void translation(Appendable out) throws IOException {

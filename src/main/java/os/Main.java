@@ -5,8 +5,9 @@ import os.examples.Walkthrough;
 import os.interrupt.InterruptDispatcher;
 import os.loader.JobLoader;
 import os.loader.JobParser;
-import os.machine.MachineMemory;
 import os.machine.VirtualCpu;
+import os.memory.FifoReplacementPolicy;
+import os.memory.PagedVirtualMemory;
 import os.process.ProcessControlBlock;
 import os.process.ProcessState;
 
@@ -59,7 +60,8 @@ public final class Main {
             throw new IllegalArgumentException("job command runs exactly one JOB block");
         }
         ProcessControlBlock pcb = processes.getFirst();
-        MachineMemory memory = new MachineMemory(256);
+        PagedVirtualMemory memory =
+                new PagedVirtualMemory(32, 8, 2, new FifoReplacementPolicy());
         VirtualCpu cpu = new VirtualCpu(memory, 64, new InterruptDispatcher());
         cpu.loadProgram(pcb.program());
         pcb.transitionTo(ProcessState.READY);
@@ -68,11 +70,12 @@ public final class Main {
         pcb.saveContext(cpu.registers());
         pcb.transitionTo(ProcessState.TERMINATED);
         System.out.printf(
-                "pid=%d halted pc=%d r0=%d mem[20]=%d retired=%d%n",
+                "pid=%d halted pc=%d r0=%d mem[20]=%d retired=%d pageFaults=%d%n",
                 pcb.processId(),
                 cpu.registers().programCounter(),
                 cpu.registers().read(0),
                 memory.read(20),
-                cpu.retiredInstructions());
+                cpu.retiredInstructions(),
+                memory.pageFaultCount());
     }
 }
