@@ -117,27 +117,6 @@ PRIO    P1 P1 P1 P1 P1 P3 P2 P2
 RR q=2  P1 P1 P2 P2 P3 P1 P1 P1
 ```
 
-```mermaid
-gantt
-    title FCFS
-    dateFormat X
-    axisFormat %s
-    P1 :a, 0, 5
-    P2 :b, 5, 2
-    P3 :c, 7, 1
-```
-
-```mermaid
-gantt
-    title Round Robin q=2
-    dateFormat X
-    axisFormat %s
-    P1 :a, 0, 2
-    P2 :b, 2, 2
-    P3 :c, 4, 1
-    P1 :d, 5, 3
-```
-
 ## Evaluation
 
 Same generated inputs for every algorithm.
@@ -146,20 +125,18 @@ Same generated inputs for every algorithm.
 **Scheduling** — 20 processes, seed `20260314`. Response = first dispatch −
 arrival. Switch = process-to-process dispatch.
 
-```mermaid
-xychart-beta
-    title Average response time (ticks)
-    x-axis [FCFS, SJF, Priority, RR_q4]
-    y-axis 0 --> 55
-    bar [49.8, 31.6, 46.8, 28.15]
-```
+```text
+Avg response
+FCFS      #########################  49.8
+SJF       ################           31.6
+Priority  #######################    46.8
+RR q=4    ##############             28.2
 
-```mermaid
-xychart-beta
-    title Context switches
-    x-axis [FCFS, SJF, Priority, RR_q4]
-    y-axis 0 --> 40
-    bar [18, 18, 18, 34]
+Context switches
+FCFS      #########                  18
+SJF       #########                  18
+Priority  #########                  18
+RR q=4    #################          34
 ```
 
 | Policy | Avg response | Avg wait | Avg turnaround | Switches |
@@ -177,11 +154,17 @@ the page whose next use is farthest (needs the full trace). 1,000 refs, seed
 `20260315`, 12 pages, 4 frames.
 
 ```mermaid
-xychart-beta
-    title Page faults / 1000 references
-    x-axis [FIFO, LRU, Optimal]
-    y-axis 0 --> 450
-    bar [397, 396, 273]
+pie title Page faults
+    "FIFO" : 397
+    "LRU" : 396
+    "Optimal" : 273
+```
+
+```text
+Page faults
+FIFO      ####################  397
+LRU       ####################  396
+Optimal   ##############        273
 ```
 
 | Policy | Faults | Hits | Fault rate |
