@@ -1,21 +1,20 @@
 package os;
 
 import os.benchmark.BenchmarkDriver;
+import os.examples.Walkthrough;
 import os.interrupt.InterruptDispatcher;
 import os.loader.JobLoader;
 import os.loader.JobParser;
 import os.machine.MachineMemory;
 import os.machine.VirtualCpu;
 import os.process.ProcessControlBlock;
+import os.process.ProcessState;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Command-line entry for running a text job or the committed experiments.
- */
 public final class Main {
     private Main() {
     }
@@ -23,9 +22,9 @@ public final class Main {
     public static void main(String[] args) throws Exception {
         if (args.length == 0 || "help".equals(args[0]) || "--help".equals(args[0])) {
             System.out.print("""
-                    Multiprogramming OS simulator
                     usage:
                       java -cp target/classes os.Main job <file.job>
+                      java -cp target/classes os.Main walkthrough [file.job]
                       java -cp target/classes os.Main bench [--output DIR]
                     """);
             return;
@@ -36,6 +35,12 @@ public final class Main {
                     throw new IllegalArgumentException("usage: os.Main job <file.job>");
                 }
                 runJob(Path.of(args[1]));
+            }
+            case "walkthrough" -> {
+                Path job = args.length == 2
+                        ? Path.of(args[1])
+                        : Path.of("src/main/resources/jobs/add.job");
+                Walkthrough.write(System.out, job);
             }
             case "bench" -> {
                 String[] rest = new String[args.length - 1];
@@ -57,11 +62,11 @@ public final class Main {
         MachineMemory memory = new MachineMemory(256);
         VirtualCpu cpu = new VirtualCpu(memory, 64, new InterruptDispatcher());
         cpu.loadProgram(pcb.program());
-        pcb.transitionTo(os.process.ProcessState.READY);
-        pcb.transitionTo(os.process.ProcessState.RUNNING);
+        pcb.transitionTo(ProcessState.READY);
+        pcb.transitionTo(ProcessState.RUNNING);
         cpu.run(1_000);
         pcb.saveContext(cpu.registers());
-        pcb.transitionTo(os.process.ProcessState.TERMINATED);
+        pcb.transitionTo(ProcessState.TERMINATED);
         System.out.printf(
                 "pid=%d halted pc=%d r0=%d mem[20]=%d retired=%d%n",
                 pcb.processId(),
