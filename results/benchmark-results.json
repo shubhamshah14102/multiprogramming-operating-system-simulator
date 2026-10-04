@@ -7,7 +7,9 @@
   "scheduling": [
     {"policy": "FCFS", "processCount": 20, "finishTime": 127, "contextSwitches": 18, "busyTime": 126, "averageTurnaroundTime": 56.100000, "averageWaitingTime": 49.800000, "averageResponseTime": 49.800000, "throughput": 0.157480, "cpuUtilization": 0.992126},
     {"policy": "SJF_NON_PREEMPTIVE", "processCount": 20, "finishTime": 127, "contextSwitches": 18, "busyTime": 126, "averageTurnaroundTime": 37.900000, "averageWaitingTime": 31.600000, "averageResponseTime": 31.600000, "throughput": 0.157480, "cpuUtilization": 0.992126},
+    {"policy": "RR_Q2", "processCount": 20, "finishTime": 127, "contextSwitches": 63, "busyTime": 126, "averageTurnaroundTime": 68.900000, "averageWaitingTime": 62.600000, "averageResponseTime": 15.300000, "throughput": 0.157480, "cpuUtilization": 0.992126},
     {"policy": "RR_Q4", "processCount": 20, "finishTime": 127, "contextSwitches": 34, "busyTime": 126, "averageTurnaroundTime": 64.900000, "averageWaitingTime": 58.600000, "averageResponseTime": 28.150000, "throughput": 0.157480, "cpuUtilization": 0.992126},
+    {"policy": "RR_Q8", "processCount": 20, "finishTime": 127, "contextSwitches": 21, "busyTime": 126, "averageTurnaroundTime": 58.750000, "averageWaitingTime": 52.450000, "averageResponseTime": 44.850000, "throughput": 0.157480, "cpuUtilization": 0.992126},
     {"policy": "PRIORITY_NON_PREEMPTIVE", "processCount": 20, "finishTime": 127, "contextSwitches": 18, "busyTime": 126, "averageTurnaroundTime": 53.100000, "averageWaitingTime": 46.800000, "averageResponseTime": 46.800000, "throughput": 0.157480, "cpuUtilization": 0.992126}
   ],
   "paging": [

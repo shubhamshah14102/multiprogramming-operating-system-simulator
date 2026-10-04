@@ -107,6 +107,13 @@ class BenchmarkReportTest {
                 BenchmarkDriver.runScheduling(schedulingWorkload);
         List<PagingMetrics> paging = BenchmarkDriver.runPaging(pagingWorkload);
 
+        assertEquals(
+                List.of("RR_Q2", "RR_Q4", "RR_Q8"),
+                scheduling.stream()
+                        .map(SchedulingMetrics::policy)
+                        .filter(policy -> policy.startsWith("RR_"))
+                        .toList());
+
         List<Path> files = new BenchmarkReportWriter().write(
                 temporaryDirectory, schedulingWorkload, pagingWorkload,
                 scheduling, paging);

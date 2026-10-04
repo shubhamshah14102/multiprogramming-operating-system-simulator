@@ -4,7 +4,9 @@ Scheduling workload: 20 processes, seed 20260314
 policy, avg response, avg waiting, avg turnaround, switches
 FCFS: 49.800, 49.800, 56.100, 18
 SJF_NON_PREEMPTIVE: 31.600, 31.600, 37.900, 18
+RR_Q2: 15.300, 62.600, 68.900, 63
 RR_Q4: 28.150, 58.600, 64.900, 34
+RR_Q8: 44.850, 52.450, 58.750, 21
 PRIORITY_NON_PREEMPTIVE: 46.800, 46.800, 53.100, 18
 
 Paging workload: 1000 references, 4 frames, seed 20260315

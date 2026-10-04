@@ -61,7 +61,9 @@ public final class BenchmarkDriver {
         List<SchedulingRun> runs = List.of(
                 new SchedulingRun("FCFS", FcfsPolicy::new),
                 new SchedulingRun("SJF_NON_PREEMPTIVE", SjfPolicy::new),
+                new SchedulingRun("RR_Q2", () -> new RoundRobinPolicy(2)),
                 new SchedulingRun("RR_Q4", () -> new RoundRobinPolicy(4)),
+                new SchedulingRun("RR_Q8", () -> new RoundRobinPolicy(8)),
                 new SchedulingRun(
                         "PRIORITY_NON_PREEMPTIVE", PriorityPolicy::new));
         List<SchedulingMetrics> metrics = new ArrayList<>(runs.size());
