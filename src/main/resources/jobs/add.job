@@ -1,4 +1,4 @@
-# Sample user job for the 2026 virtual CPU.
+# Sample user job.
 JOB 1 PRIORITY 1
 LOADI R0 10
 LOADI R1 3

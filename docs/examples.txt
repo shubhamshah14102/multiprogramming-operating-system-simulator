@@ -4,7 +4,7 @@ CPU trace (src/main/resources/jobs/add.job)
   pc=2 ADD r0=13
   pc=3 STORE r0=13
   pc=4 HALT r0=13
-  halt pid=1 pc=5 mem[20]=13
+  halt pid=1 pc=5 mem[20]=13 pageFaults=2
 
 Address translation  VA 10, page size 4, PTE[2]=frame 1
   page=2 offset=2 frame=1 PA=6

@@ -3,6 +3,19 @@
 Maven module. Entry point `os.Main`. Tests under `src/test/java`. Original
 course files remain in `bin/` and are not compiled.
 
+## Execution paths
+
+The repository has two deliberate paths:
+
+1. `os.Main job` loads a text program into a `VirtualCpu` backed by
+   `PagedVirtualMemory`. Instruction fetches and user memory operations use
+   demand paging.
+2. `MultiprogrammingKernel` exercises admission, scheduling, preemption, and
+   blocking with scripted CPU/I/O bursts. It does not execute the ISA.
+
+The benchmark driver evaluates scheduling and page replacement separately on
+shared, seeded inputs.
+
 ## CPU
 
 `VirtualCpu` fetches a word, decodes opcode/registers/immediate, executes.
@@ -35,7 +48,8 @@ and adds blocking I/O.
 
 `AddressTranslator` computes page and offset. `PagedVirtualMemory` handles
 faults: pick a free frame or a victim (`FIFO` / `LRU` / `Optimal`), write
-dirty pages to `BackingStore`, load the missing page.
+dirty pages to `BackingStore`, load the missing page. This is page write-back,
+not whole-process swap.
 
 ## I/O
 

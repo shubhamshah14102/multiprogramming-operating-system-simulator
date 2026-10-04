@@ -33,7 +33,7 @@ END
 
 ```text
 $ java -cp target/classes os.Main job src/main/resources/jobs/add.job
-pid=1 halted pc=5 r0=13 mem[20]=13 retired=5
+pid=1 halted pc=5 r0=13 mem[20]=13 retired=5 pageFaults=2
 ```
 
 `walkthrough` prints a per-instruction CPU trace, one address translation,
@@ -43,20 +43,25 @@ string. Committed copy: [`docs/examples.txt`](docs/examples.txt).
 ## Architecture
 
 ```mermaid
-flowchart LR
-  job[Job text] --> loader[Loader]
-  loader --> pcb[PCB]
-  pcb --> ready[Ready queue]
-  ready --> sched[Scheduler]
-  sched --> disp[Dispatcher]
-  disp --> cpu[Virtual CPU]
-  cpu --> mmu[Page table]
-  mmu --> pager[Demand pager]
-  pager --> swap[Backing store]
-  cpu --> irq[Interrupts]
-  irq --> kernel[Kernel]
-  cpu --> spool[Spool / buffer]
-  spool --> dev[I/O device]
+flowchart TD
+  subgraph jobPath [Executable job path]
+    job[Job text] --> loader[Loader]
+    loader --> pcb[PCB]
+    pcb --> cpu[Virtual CPU]
+    cpu --> irq[Interrupt dispatcher]
+    cpu --> pager[Demand-paged memory]
+    pager --> backing[Backing store]
+  end
+  subgraph kernelPath [Multiprogramming simulation]
+    bursts[CPU and I/O bursts] --> kernel[Kernel loop]
+    kernel --> sched[Scheduler]
+    kernel --> spool[Spool and device]
+  end
+  subgraph experimentPath [Experiments]
+    workload[Seeded workloads] --> bench[Benchmark driver]
+    bench --> sched
+    bench --> pager
+  end
 ```
 
 Layout: `os.machine`, `os.interrupt`, `os.process`, `os.loader`,
@@ -77,8 +82,9 @@ fetch-decode-execute cycle. User vs master mode.
 | 15..0 | immediate or address |
 
 `LOADI`, `LOAD`, `STORE`, `MOVE`, `ADD`, `SUB`, `JUMP`, `JZ`, `SVC`, `HALT`,
-`SET_TIMER` (master only). `LOAD`/`STORE` use word addresses. With paging,
-those addresses go through the page table.
+`SET_TIMER` (master only). The `job` and `walkthrough` commands run the CPU
+over `PagedVirtualMemory`; instruction fetches and `LOAD`/`STORE` therefore
+go through the page table.
 
 ## Interrupts, PCBs, paging, I/O
 
@@ -88,7 +94,7 @@ those addresses go through the page table.
   `NEW → READY → RUNNING → {READY, BLOCKED, TERMINATED}`, saved registers/PC.
 - **Paging:** `VA = page × pageSize + offset`. A miss allocates a frame,
   writing a dirty victim back to the backing store first. That write-back is
-  the swap path that exists today.
+  per-page backing-store I/O, not whole-process swapping.
 - **I/O:** bounded buffer, blocking device queue, spool that keeps a job if
   the device is full (`Spooler.drainOneTo`).
 
@@ -149,6 +155,17 @@ RR q=4    #################          34
 RR response is **43.5%** below FCFS; SJF wins wait/turnaround; RR pays in
 switches and wait.
 
+Quantum sensitivity on the same 20 processes:
+
+| Quantum | Avg response | Avg wait | Avg turnaround | Switches |
+| ---: | ---: | ---: | ---: | ---: |
+| 2 | 15.300 | 62.600 | 68.900 | 63 |
+| 4 | 28.150 | 58.600 | 64.900 | 34 |
+| 8 | 44.850 | 52.450 | 58.750 | 21 |
+
+Smaller quanta improve first response here, but increase switches and total
+waiting. The reported RR result is therefore configuration-specific.
+
 **Paging** — FIFO evicts oldest frame, LRU the least recently used, Optimal
 the page whose next use is farthest (needs the full trace). 1,000 refs, seed
 `20260315`, 12 pages, 4 frames.
@@ -178,9 +195,15 @@ FIFO is not always worse than LRU (see the 14-ref string in the walkthrough).
 
 Raw files: [`results/`](results/). Method notes: [`docs/experiments.md`](docs/experiments.md).
 
-## Limits
+## Future work
 
-- ISA is this project's encoding, not a published course opcode sheet
-- Optimal replacement is an oracle
-- Kernel I/O bursts are data, not a real device model
-- `bin/` holds standalone 2022 lab programs (including classmate folders)
+The main remaining step is to join the two execution paths above:
+
+- execute each kernel process as virtual instructions instead of scripted bursts
+- surface page faults as kernel interrupts that can block and wake a process
+- add per-process address spaces, protection checks, and optionally a small TLB
+- route `SVC` output through the spooler
+- model whole-process swap separately from current per-page write-back
+
+Optimal replacement remains an offline oracle. The standalone programs in
+`bin/` remain historical material rather than simulator modules.
