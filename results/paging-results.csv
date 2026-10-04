@@ -1,0 +1,4 @@
+policy,reference_count,frame_count,hits,faults,fault_rate,fault_count_check,eviction_count
+FIFO,1000,4,603,397,0.397000,397,393
+LRU,1000,4,604,396,0.396000,396,392
+OPTIMAL,1000,4,727,273,0.273000,273,269

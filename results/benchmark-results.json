@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "workloads": {
+    "scheduling": {"generator": "SplittableRandom", "seed": 20260314, "processCount": 20, "arrivalMax": 30, "burstMin": 1, "burstMax": 12, "priorityMin": 1, "priorityMax": 5},
+    "paging": {"generator": "paging-locality-v1", "seed": 20260315, "traceLength": 1000, "pageCount": 12, "frameCount": 4, "localityPercent": 80, "phaseLength": 100}
+  },
+  "scheduling": [
+    {"policy": "FCFS", "processCount": 20, "finishTime": 127, "contextSwitches": 18, "busyTime": 126, "averageTurnaroundTime": 56.100000, "averageWaitingTime": 49.800000, "averageResponseTime": 49.800000, "throughput": 0.157480, "cpuUtilization": 0.992126},
+    {"policy": "SJF_NON_PREEMPTIVE", "processCount": 20, "finishTime": 127, "contextSwitches": 18, "busyTime": 126, "averageTurnaroundTime": 37.900000, "averageWaitingTime": 31.600000, "averageResponseTime": 31.600000, "throughput": 0.157480, "cpuUtilization": 0.992126},
+    {"policy": "RR_Q4", "processCount": 20, "finishTime": 127, "contextSwitches": 34, "busyTime": 126, "averageTurnaroundTime": 64.900000, "averageWaitingTime": 58.600000, "averageResponseTime": 28.150000, "throughput": 0.157480, "cpuUtilization": 0.992126},
+    {"policy": "PRIORITY_NON_PREEMPTIVE", "processCount": 20, "finishTime": 127, "contextSwitches": 18, "busyTime": 126, "averageTurnaroundTime": 53.100000, "averageWaitingTime": 46.800000, "averageResponseTime": 46.800000, "throughput": 0.157480, "cpuUtilization": 0.992126}
+  ],
+  "paging": [
+    {"policy": "FIFO", "referenceCount": 1000, "frameCount": 4, "hits": 603, "faults": 397, "faultRate": 0.397000, "faultOrderPreview": [11, 0, 8, 7, 6, 5, 3, 4], "evictionCount": 393},
+    {"policy": "LRU", "referenceCount": 1000, "frameCount": 4, "hits": 604, "faults": 396, "faultRate": 0.396000, "faultOrderPreview": [11, 0, 8, 7, 6, 5, 3, 4], "evictionCount": 392},
+    {"policy": "OPTIMAL", "referenceCount": 1000, "frameCount": 4, "hits": 727, "faults": 273, "faultRate": 0.273000, "faultOrderPreview": [11, 0, 8, 7, 6, 5, 3, 4], "evictionCount": 269}
+  ]
+}
