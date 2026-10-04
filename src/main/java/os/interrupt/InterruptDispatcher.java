@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Routes interrupts while making the user-to-master mode transition explicit.
- */
+/** Dispatches interrupts in master mode, then restores the previous mode. */
 public final class InterruptDispatcher {
     private final Map<InterruptType, InterruptHandler> handlers =
             new EnumMap<>(InterruptType.class);

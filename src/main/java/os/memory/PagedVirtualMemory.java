@@ -7,11 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Single-address-space demand-paged memory. Page tables and frame ownership are
- * intentionally exposed for observation, while all data movement goes through
- * the explicit physical memory and backing store.
- */
+/** Demand-paged virtual memory over a word-addressable physical store. */
 public final class PagedVirtualMemory implements Memory {
     private final int pageSize;
     private final MachineMemory physicalMemory;

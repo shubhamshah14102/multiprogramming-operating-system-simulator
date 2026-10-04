@@ -20,7 +20,7 @@ class JobParserLoaderTest {
     @Test
     void parsesAndLoadsJobsInSourceOrder() {
         String source = """
-                # deterministic fixture
+                # deterministic example
                 JOB 7 PRIORITY 2
                 LOADI R0, 10
                 LOADI R1, 3

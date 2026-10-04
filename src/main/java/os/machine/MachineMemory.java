@@ -3,8 +3,7 @@ package os.machine;
 import java.util.Arrays;
 
 /**
- * Word-addressable physical memory. Address translation can be placed in front
- * of this class in the paging phase.
+ * Word-addressable physical memory.
  */
 public final class MachineMemory implements Memory {
     private final int[] words;

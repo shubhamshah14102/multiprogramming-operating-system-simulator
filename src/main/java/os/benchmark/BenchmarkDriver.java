@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-/** Command-line entry point for the reproducible Phase 3 experiments. */
+/** Runs the committed scheduling and paging experiments. */
 public final class BenchmarkDriver {
     private BenchmarkDriver() {
     }

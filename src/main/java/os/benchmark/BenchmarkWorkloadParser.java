@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.SplittableRandom;
 
-/** Parses and materializes the committed, seeded Phase 3 workload definitions. */
+/** Materializes the committed scheduling and paging workload definitions. */
 public final class BenchmarkWorkloadParser {
     public SchedulingWorkload parseScheduling(Reader source) throws IOException {
         Properties properties = load(source);

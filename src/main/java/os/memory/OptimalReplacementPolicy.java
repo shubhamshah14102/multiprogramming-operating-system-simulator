@@ -4,8 +4,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Offline teaching policy. The constructor receives the complete future page
- * reference trace; it evicts the page whose next use is farthest away.
+ * Belady's Optimal: evict the resident page whose next use is farthest in the
+ * supplied trace. Requires the full trace up front.
  */
 public final class OptimalReplacementPolicy implements PageReplacementPolicy {
     private final List<Integer> pageTrace;

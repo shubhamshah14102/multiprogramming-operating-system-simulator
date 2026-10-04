@@ -1,9 +1,6 @@
 package os.machine;
 
-/**
- * Word-addressable memory boundary used by the CPU. A paged address translator
- * can implement this contract in a later phase.
- */
+/** Word-addressable memory used by the CPU. */
 public interface Memory {
     int read(int address);
 

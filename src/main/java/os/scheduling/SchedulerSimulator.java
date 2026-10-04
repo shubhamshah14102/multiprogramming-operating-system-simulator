@@ -4,7 +4,6 @@ import os.kernel.Dispatcher;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,10 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * Deterministic discrete-event scheduler. It advances directly over idle gaps
- * and records every dispatch interval, including Round Robin quanta.
- */
+/** Discrete-event CPU scheduler. Idle time is recorded, not skipped silently. */
 public final class SchedulerSimulator {
     private final SchedulingPolicy policy;
 

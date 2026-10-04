@@ -1,28 +1,18 @@
-# Phase 3 Experiment Results
+# Experiment results
 
-These are measured simulator results, not target values. All scheduling
-policies used the same seeded 20-process workload. All paging policies
-used the same seeded 1,000-reference trace and the same 4 frames.
+Same 20-process workload for every scheduler. Same 1,000-reference
+trace and 4 frames for every page-replacement policy.
 
-## Scheduling finding
+## Scheduling
 
-FCFS average response time was 49.800 ticks and RR quantum 4 average
-response time was 28.150 ticks. The measured RR-vs-FCFS reduction was
-**43.474%**. Context switches were **18 for FCFS** and **34 for RR**.
+FCFS average response time 49.800, Round Robin (q=4) 28.150
+(**43.474%** lower). Context switches: FCFS 18, RR 34.
 
-## Paging finding
+## Paging
 
-Fault ordering from fewest to most was **OPTIMAL (273) < LRU (396) < FIFO (397)**. The number in
-parentheses is the actual page-fault count.
+Faults, fewest to most: **OPTIMAL (273) < LRU (396) < FIFO (397)**.
 
-## Résumé-claim check
+## Reproduce
 
-A résumé claim of exactly 72% lower response time is **NOT SUPPORTED** by this
-experiment. The defensible claim is the measured 43.474% reduction above;
-the workload was not tuned to force a target percentage.
-
-## Reproduction inputs
-
-Scheduling seed: `20260314`. Paging seed: `20260315`. The complete generator
-configuration is committed in `src/main/resources/workloads/` and
-documented in `WORKLOADS.md`.
+Seeds: scheduling `20260314`, paging `20260315`.
+Definitions: `src/main/resources/workloads/`.

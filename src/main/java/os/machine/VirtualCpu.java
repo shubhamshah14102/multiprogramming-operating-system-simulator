@@ -9,9 +9,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
 
-/**
- * A deterministic virtual CPU with an explicit fetch-decode-execute cycle.
- */
+/** Fetch-decode-execute virtual CPU. */
 public final class VirtualCpu {
     private final Memory memory;
     private final RegisterFile registers;

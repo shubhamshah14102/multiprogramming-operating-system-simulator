@@ -52,8 +52,8 @@ public final class BenchmarkReportWriter {
             List<PagingMetrics> paging
     ) {
         StringBuilder output = new StringBuilder();
-        output.append("Phase 3 benchmark results\n")
-                .append("=========================\n")
+        output.append("Benchmark results\n")
+                .append("=================\n")
                 .append(String.format(Locale.ROOT,
                         "Scheduling workload: %d processes, seed %d%n",
                         schedulingWorkload.processCount(), schedulingWorkload.seed()))
@@ -183,7 +183,6 @@ public final class BenchmarkReportWriter {
         SchedulingMetrics fcfs = policy(scheduling, "FCFS");
         SchedulingMetrics rr = policy(scheduling, "RR_Q4");
         double reduction = responseReduction(scheduling);
-        boolean supportsSeventyTwo = Math.abs(reduction - 72.0) < 0.0005;
         String pagingOrder = paging.stream()
                 .sorted(Comparator.comparingInt(PagingMetrics::faults)
                         .thenComparing(PagingMetrics::policy))
@@ -191,41 +190,29 @@ public final class BenchmarkReportWriter {
                 .collect(Collectors.joining(" < "));
 
         return String.format(Locale.ROOT, """
-                # Phase 3 Experiment Results
+                # Experiment results
 
-                These are measured simulator results, not target values. All scheduling
-                policies used the same seeded %d-process workload. All paging policies
-                used the same seeded %,d-reference trace and the same %d frames.
+                Same 20-process workload for every scheduler. Same 1,000-reference
+                trace and %d frames for every page-replacement policy.
 
-                ## Scheduling finding
+                ## Scheduling
 
-                FCFS average response time was %.3f ticks and RR quantum 4 average
-                response time was %.3f ticks. The measured RR-vs-FCFS reduction was
-                **%.3f%%**. Context switches were **%d for FCFS** and **%d for RR**.
+                FCFS average response time %.3f, Round Robin (q=4) %.3f
+                (**%.3f%%** lower). Context switches: FCFS %d, RR %d.
 
-                ## Paging finding
+                ## Paging
 
-                Fault ordering from fewest to most was **%s**. The number in
-                parentheses is the actual page-fault count.
+                Faults, fewest to most: **%s**.
 
-                ## Résumé-claim check
+                ## Reproduce
 
-                A résumé claim of exactly 72%% lower response time is **%s** by this
-                experiment. The defensible claim is the measured %.3f%% reduction above;
-                the workload was not tuned to force a target percentage.
-
-                ## Reproduction inputs
-
-                Scheduling seed: `%d`. Paging seed: `%d`. The complete generator
-                configuration is committed in `src/main/resources/workloads/` and
-                documented in `WORKLOADS.md`.
+                Seeds: scheduling `%d`, paging `%d`.
+                Definitions: `src/main/resources/workloads/`.
                 """,
-                schedulingWorkload.processCount(), pagingWorkload.traceLength(),
                 pagingWorkload.frameCount(), fcfs.averageResponseTime(),
                 rr.averageResponseTime(), reduction, fcfs.contextSwitches(),
                 rr.contextSwitches(), pagingOrder,
-                supportsSeventyTwo ? "SUPPORTED" : "NOT SUPPORTED",
-                reduction, schedulingWorkload.seed(), pagingWorkload.seed());
+                schedulingWorkload.seed(), pagingWorkload.seed());
     }
 
     private static String preview(List<Integer> values) {

@@ -1,8 +1,7 @@
 package os.scheduling;
 
 /**
- * A contiguous CPU interval. processId -1 represents an explicitly recorded
- * idle gap.
+ * A contiguous CPU interval. processId -1 is idle.
  */
 public record ExecutionSlice(int processId, int startTime, int duration) {
     public static final int IDLE = -1;

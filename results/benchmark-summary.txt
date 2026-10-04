@@ -1,5 +1,5 @@
-Phase 3 benchmark results
-=========================
+Benchmark results
+=================
 Scheduling workload: 20 processes, seed 20260314
 policy, avg response, avg waiting, avg turnaround, switches
 FCFS: 49.800, 49.800, 56.100, 18

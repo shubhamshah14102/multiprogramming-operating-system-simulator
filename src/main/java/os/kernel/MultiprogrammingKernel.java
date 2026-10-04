@@ -20,8 +20,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Small tick-driven kernel loop that demonstrates admission, dispatch,
- * preemption, blocking, wake-up interrupts, and termination.
+ * Tick-driven kernel: admit, dispatch, preempt on the quantum, block on I/O,
+ * wake on I/O completion, terminate.
  */
 public final class MultiprogrammingKernel {
     private final SchedulingPolicy policy;
