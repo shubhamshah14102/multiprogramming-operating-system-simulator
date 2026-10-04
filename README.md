@@ -94,17 +94,57 @@ those addresses go through the page table.
 
 The kernel multiplexes scripted CPU/I/O bursts. It is not a hosted OS.
 
+## Four schedulers
+
+Same ready queue; they only differ in **who runs next**. Non-preemptive
+policies run until the CPU burst ends. Round Robin also stops at the quantum.
+
+| Policy | Pick from ready | Preempt |
+| --- | --- | --- |
+| **FCFS** | arrived first (`readySequence`) | no |
+| **SJF** | shortest remaining burst | no |
+| **Priority** | smallest priority number | no |
+| **RR** | arrived first, like FCFS | yes, after `q` ticks |
+
+Demo (`os.Main walkthrough`): P1 at 0 burst 5, P2 at 1 burst 2, P3 at 1 burst 1.
+SJF and priority match here because P3 is both shortest and highest priority.
+
+```text
+time    0  1  2  3  4  5  6  7  8
+FCFS    P1 P1 P1 P1 P1 P2 P2 P3
+SJF     P1 P1 P1 P1 P1 P3 P2 P2
+PRIO    P1 P1 P1 P1 P1 P3 P2 P2
+RR q=2  P1 P1 P2 P2 P3 P1 P1 P1
+```
+
+```mermaid
+gantt
+    title FCFS
+    dateFormat X
+    axisFormat %s
+    P1 :a, 0, 5
+    P2 :b, 5, 2
+    P3 :c, 7, 1
+```
+
+```mermaid
+gantt
+    title Round Robin q=2
+    dateFormat X
+    axisFormat %s
+    P1 :a, 0, 2
+    P2 :b, 2, 2
+    P3 :c, 4, 1
+    P1 :d, 5, 3
+```
+
 ## Evaluation
 
-Same generated inputs for every algorithm. Generators:
-[`src/main/resources/workloads/`](src/main/resources/workloads/)
-([`WORKLOADS.md`](WORKLOADS.md)).
+Same generated inputs for every algorithm.
+[`workloads/`](src/main/resources/workloads/) · [`WORKLOADS.md`](WORKLOADS.md).
 
-**Scheduling** — 20 processes, seed `20260314`. FCFS, non-preemptive SJF,
-Round Robin quantum 4, non-preemptive priority (lower number first).
-
-Response time = first dispatch − arrival. A context switch is a
-process-to-process dispatch (idle is not counted).
+**Scheduling** — 20 processes, seed `20260314`. Response = first dispatch −
+arrival. Switch = process-to-process dispatch.
 
 ```mermaid
 xychart-beta
@@ -129,10 +169,12 @@ xychart-beta
 | Priority | 46.800 | 46.800 | 53.100 | 18 |
 | RR q=4 | 28.150 | 58.600 | 64.900 | 34 |
 
-RR cuts average response **43.5%** vs FCFS and does more switches.
+RR response is **43.5%** below FCFS; SJF wins wait/turnaround; RR pays in
+switches and wait.
 
-**Paging** — 1,000 refs, seed `20260315`, 12 pages, 4 frames. FIFO, LRU,
-Optimal (Optimal sees the whole trace).
+**Paging** — FIFO evicts oldest frame, LRU the least recently used, Optimal
+the page whose next use is farthest (needs the full trace). 1,000 refs, seed
+`20260315`, 12 pages, 4 frames.
 
 ```mermaid
 xychart-beta

@@ -18,6 +18,22 @@ java -cp target/classes os.Main bench --output results
 
 ## What was measured
 
+```mermaid
+xychart-beta
+    title Avg response (20 processes)
+    x-axis [FCFS, SJF, Priority, RR]
+    y-axis 0 --> 55
+    bar [49.8, 31.6, 46.8, 28.15]
+```
+
+```mermaid
+xychart-beta
+    title Page faults (1000 refs, 4 frames)
+    x-axis [FIFO, LRU, Optimal]
+    y-axis 0 --> 450
+    bar [397, 396, 273]
+```
+
 | Policy | Avg response | Switches |
 | --- | ---: | ---: |
 | FCFS | 49.800 | 18 |
@@ -32,6 +48,8 @@ RR vs FCFS response: **43.5%** lower, more switches.
 | FIFO | 397 |
 | LRU | 396 |
 | Optimal | 273 |
+
+Short-trace Gantt (3 jobs) is in the README.
 
 Definitions: response = first dispatch − arrival; wait = turnaround − burst;
 turnaround = completion − arrival; context switch = dispatcher change of

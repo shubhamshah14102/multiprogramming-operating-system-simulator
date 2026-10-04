@@ -21,9 +21,15 @@ snapshot. `JobParser` reads the text format used in `src/main/resources/jobs/`.
 
 ## Scheduling
 
-`SchedulingPolicy.select(ready, now)` is implemented by FCFS, non-preemptive
-SJF, Round Robin, and non-preemptive priority. `SchedulerSimulator` is
-event-driven. `MultiprogrammingKernel` is tick-driven and adds blocking I/O.
+`SchedulingPolicy.select(ready, now)`:
+
+- FCFS — oldest ready
+- SJF — shortest remaining burst (non-preemptive)
+- Priority — lowest number (non-preemptive)
+- RR — oldest ready, stop after `q` ticks
+
+`SchedulerSimulator` is event-driven. `MultiprogrammingKernel` is tick-driven
+and adds blocking I/O.
 
 ## Memory
 
