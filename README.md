@@ -1,120 +1,161 @@
-# Multiprogramming Operating System Simulator
+# Multiprogramming OS Simulator
 
-Java teaching simulator with an explicit virtual CPU, interrupts, processes,
-CPU scheduling, demand-paged memory, and spooled I/O. Experiments compare
-four schedulers and three page-replacement policies on committed workloads.
+Java 21 simulator of a small OS: virtual CPU, interrupts, PCBs, CPU scheduling,
+demand paging, and spooled I/O. Algorithms share interfaces so they can be
+compared on the same input.
 
-## What it does
+Requires **JDK 21** and **Maven**.
 
-A user job is parsed into words, loaded into a PCB, and executed on a
-word-addressable virtual machine. A kernel loop can multiplex several
-processes. A separate paged-memory subsystem translates addresses and
-handles faults. A benchmark driver runs the same 20-process workload and the
-same 1,000-reference trace through interchangeable algorithms and writes
-JSON/CSV.
-
-## Implemented from first principles
-
-Scheduling decisions, page replacement, address translation, interrupt
-dispatch, and process-state transitions are written in this repository. Java
-collections hold queues; they do not hide the OS policy.
-
-## Architecture
-
-```text
-JobLoader -> PCB -> Ready queue -> Scheduler -> Dispatcher -> VirtualCPU
-                                              -> MMU / page table
-                                              -> Demand pager / replacement
-                                              -> Swap / backing store
-VirtualCPU -> Interrupt controller -> Kernel loop
-VirtualCPU -> Spool / bounded buffer -> Device
-Kernel loop -> Metrics
-```
-
-Details: [`docs/design.md`](docs/design.md).
-
-## Simulated ISA / execution model
-
-32-bit instructions: opcode in bits 31..24, registers in 23..16, address or
-immediate in 15..0. Registers `R0`–`R7` plus a program counter.
-Mnemonics: `LOADI`, `LOAD`, `STORE`, `MOVE`, `ADD`, `SUB`, `JUMP`, `JZ`,
-`SVC`, `HALT`, `SET_TIMER`. One `step()` is one fetch-decode-execute cycle.
-
-## Process lifecycle
-
-`NEW → READY → RUNNING`, then `READY` (preempt), `BLOCKED` (I/O), or
-`TERMINATED`. The PCB stores pid, priority, program, and saved CPU context.
-
-## Interrupt model
-
-Service (`SVC`), timer, program faults, and I/O completion. Dispatch enters
-master mode, runs the handler, then restores the interrupted mode unless the
-handler halted the CPU.
-
-## Memory-management model
-
-`virtual = page * pageSize + offset`. Missing pages fault, a replacement
-policy picks a frame, dirty pages write back, then the page is loaded from
-the backing store.
-
-## Scheduling algorithms
-
-FCFS, non-preemptive SJF, Round Robin, non-preemptive priority. Same
-`SchedulingPolicy` interface and the same process list.
-
-## Page-replacement algorithms
-
-FIFO, LRU, and offline Optimal. Optimal is a trace oracle, not a runtime OS
-policy.
-
-## Build, run, test
-
-Requires JDK 21 and Maven.
-
-```text
+```bash
 mvn test
 mvn -q -DskipTests compile
 java -cp target/classes os.Main job src/main/resources/jobs/add.job
+java -cp target/classes os.Main walkthrough
 java -cp target/classes os.Main bench --output results
 ```
 
-Demo scripts: `scripts/demo.sh`, `scripts/demo.ps1`.
+Windows: `scripts/demo.ps1`. Unix: `scripts/demo.sh`. CI runs `mvn test` and
+uploads the JaCoCo HTML report (`target/site/jacoco`).
 
-CI: `.github/workflows/tests.yml` runs `mvn test` on Java 21.
+## Sample input / output
 
-## Reproducible experiments
+`src/main/resources/jobs/add.job`:
 
-Workload generators: `src/main/resources/workloads/` (see `WORKLOADS.md`).
-The 20-process and 1,000-reference experiments are defined there, not typed
-into reports by hand.
+```text
+JOB 1 PRIORITY 1
+LOADI R0 10
+LOADI R1 3
+ADD R0 R1
+STORE R0 20
+HALT
+END
+```
 
-## Benchmark results (measured)
+```text
+$ java -cp target/classes os.Main job src/main/resources/jobs/add.job
+pid=1 halted pc=5 r0=13 mem[20]=13 retired=5
+```
 
-On the committed inputs:
+`walkthrough` prints a per-instruction CPU trace, one address translation,
+a 3-process Gantt for four schedulers, and FIFO/LRU/Optimal on a 14-reference
+string. Committed copy: [`docs/examples.txt`](docs/examples.txt).
 
-- Round Robin (q=4) average response **28.150** vs FCFS **49.800**
-  (**43.474%** reduction), context switches **34** vs **18**
-- Page faults on the 1,000-reference / 4-frame trace:
-  FIFO **397**, LRU **396**, Optimal **273**
+## Architecture
 
-A résumé line claiming ~72% Round-Robin response improvement is **not**
-supported by this experiment. Full write-up: [`docs/experiments.md`](docs/experiments.md)
-and [`results/EXPERIMENT_RESULTS.md`](results/EXPERIMENT_RESULTS.md).
+```mermaid
+flowchart LR
+  job[Job text] --> loader[Loader]
+  loader --> pcb[PCB]
+  pcb --> ready[Ready queue]
+  ready --> sched[Scheduler]
+  sched --> disp[Dispatcher]
+  disp --> cpu[Virtual CPU]
+  cpu --> mmu[Page table]
+  mmu --> pager[Demand pager]
+  pager --> swap[Backing store]
+  cpu --> irq[Interrupts]
+  irq --> kernel[Kernel]
+  cpu --> spool[Spool / buffer]
+  spool --> dev[I/O device]
+```
 
-## Limitations
+Layout: `os.machine`, `os.interrupt`, `os.process`, `os.loader`,
+`os.scheduling`, `os.memory`, `os.io`, `os.kernel`, `os.benchmark`.
+Original 2022 labs stay in [`bin/`](bin/) and are not on the Maven classpath.
+More detail: [`docs/design.md`](docs/design.md).
 
-- The virtual ISA is a 2026 teaching design; the 2022 labs had no opcode sheet
-- Optimal replacement sees the future trace
-- The kernel loop uses scripted CPU/I/O bursts; it is not a full multi-user OS
-- LRU vs FIFO on the long trace differs by one fault; do not over-claim LRU
-- Banker's algorithm and mutex/semaphore programs stay in the 2022 lab archive
+## Virtual CPU
 
-## Original academic context versus later portfolio work
+32-bit words. `R0`–`R7` and a program counter. One `VirtualCpu.step()` is one
+fetch-decode-execute cycle. User vs master mode.
 
-| Year | What |
+| Bits | Field |
 | --- | --- |
-| 2022 | Discrete labs uploaded in one commit to `bin/` (Linux/shell PDFs, scheduling, paging, sync). Classmate folders are preserved and labeled. |
-| 2026 | Integrated simulator in `src/`, tests, workloads, and measured results |
+| 31..24 | opcode |
+| 23..20 | register A |
+| 19..16 | register B |
+| 15..0 | immediate or address |
 
-The PDFs in `bin/_Linux/_Shubham/` are Linux command and shell-script
-assignments, not the specification for this simulator.
+`LOADI`, `LOAD`, `STORE`, `MOVE`, `ADD`, `SUB`, `JUMP`, `JZ`, `SVC`, `HALT`,
+`SET_TIMER` (master only). `LOAD`/`STORE` use word addresses. With paging,
+those addresses go through the page table.
+
+## Interrupts, PCBs, paging, I/O
+
+- **Interrupts:** `SVC`, timer quantum, program fault (illegal opcode,
+  privilege, bad address), I/O completion. Dispatch runs in master mode.
+- **PCB:** pid, priority, program, state
+  `NEW → READY → RUNNING → {READY, BLOCKED, TERMINATED}`, saved registers/PC.
+- **Paging:** `VA = page × pageSize + offset`. A miss allocates a frame,
+  writing a dirty victim back to the backing store first. That write-back is
+  the swap path that exists today.
+- **I/O:** bounded buffer, blocking device queue, spool that keeps a job if
+  the device is full (`Spooler.drainOneTo`).
+
+The kernel multiplexes scripted CPU/I/O bursts. It is not a hosted OS.
+
+## Evaluation
+
+Same generated inputs for every algorithm. Generators:
+[`src/main/resources/workloads/`](src/main/resources/workloads/)
+([`WORKLOADS.md`](WORKLOADS.md)).
+
+**Scheduling** — 20 processes, seed `20260314`. FCFS, non-preemptive SJF,
+Round Robin quantum 4, non-preemptive priority (lower number first).
+
+Response time = first dispatch − arrival. A context switch is a
+process-to-process dispatch (idle is not counted).
+
+```mermaid
+xychart-beta
+    title Average response time (ticks)
+    x-axis [FCFS, SJF, Priority, RR_q4]
+    y-axis 0 --> 55
+    bar [49.8, 31.6, 46.8, 28.15]
+```
+
+```mermaid
+xychart-beta
+    title Context switches
+    x-axis [FCFS, SJF, Priority, RR_q4]
+    y-axis 0 --> 40
+    bar [18, 18, 18, 34]
+```
+
+| Policy | Avg response | Avg wait | Avg turnaround | Switches |
+| --- | ---: | ---: | ---: | ---: |
+| FCFS | 49.800 | 49.800 | 56.100 | 18 |
+| SJF | 31.600 | 31.600 | 37.900 | 18 |
+| Priority | 46.800 | 46.800 | 53.100 | 18 |
+| RR q=4 | 28.150 | 58.600 | 64.900 | 34 |
+
+RR cuts average response **43.5%** vs FCFS and does more switches.
+
+**Paging** — 1,000 refs, seed `20260315`, 12 pages, 4 frames. FIFO, LRU,
+Optimal (Optimal sees the whole trace).
+
+```mermaid
+xychart-beta
+    title Page faults / 1000 references
+    x-axis [FIFO, LRU, Optimal]
+    y-axis 0 --> 450
+    bar [397, 396, 273]
+```
+
+| Policy | Faults | Hits | Fault rate |
+| --- | ---: | ---: | ---: |
+| FIFO | 397 | 603 | 39.7% |
+| LRU | 396 | 604 | 39.6% |
+| Optimal | 273 | 727 | 27.3% |
+
+On this trace LRU is one fault better than FIFO; Optimal is clearly better.
+FIFO is not always worse than LRU (see the 14-ref string in the walkthrough).
+
+Raw files: [`results/`](results/). Method notes: [`docs/experiments.md`](docs/experiments.md).
+
+## Limits
+
+- ISA is this project's encoding, not a published course opcode sheet
+- Optimal replacement is an oracle
+- Kernel I/O bursts are data, not a real device model
+- `bin/` holds standalone 2022 lab programs (including classmate folders)
